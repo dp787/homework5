@@ -1,41 +1,36 @@
 class Calculator:
     commands = {
-        'add': lambda a, b: a + b,
-        'subtract': lambda a, b: a - b,
-        'multiply': lambda a, b: a * b,
-        'divide': lambda a, b: a / b if b != 0 else None,
+        'add': 'Addition',
+        'subtract': 'Subtraction',
+        'multiply': 'Multiplication',
+        'divide': 'Division',
+        'menu': 'Display Menu',
     }
-    
-    @staticmethod
-    def execute_command(command: str, a: float, b: float) -> float:
-        if command in Calculator.commands:
-            return Calculator.commands[command](a, b)
-        else:
-            raise ValueError(f"Invalid command: {command}")
 
     @staticmethod
-    def print_menu():
+    def add(a: float, b: float) -> float:
+        return a + b
+
+    @staticmethod
+    def subtract(a: float, b: float) -> float:
+        return a - b
+
+    @staticmethod
+    def multiply(a: float, b: float) -> float:
+        return a * b
+
+    @staticmethod
+    def divide(a: float, b: float) -> float:
+        if b == 0:
+            raise ValueError("Cannot divide by zero.")
+        return a / b
+
+    @classmethod
+    def display_menu(cls):
         print("Available Commands:")
-        for cmd in Calculator.commands:
-            print(f"- {cmd}")
+        for command, description in cls.commands.items():
+            print(f"{command}: {description}")
 
-# REPL loop
-while True:
-    user_input = input("Enter command (type 'exit' to quit): ").lower()
+if __name__ == "__main__":
+    Calculator.display_menu()
 
-    if user_input == 'exit':
-        break
-
-    if user_input == 'menu':
-        Calculator.print_menu()
-        continue
-
-    try:
-        command, a, b = user_input.split()
-        a, b = float(a), float(b)
-        result = Calculator.execute_command(command, a, b)
-        print(f"Result: {result}")
-    except ValueError as e:
-        print(f"Error: {e}")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
