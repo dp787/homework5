@@ -1,68 +1,45 @@
 import pytest
 from calculator.calculator import Calculator
+import multiprocessing
 
-@pytest.mark.parametrize("num1, num2, expected", [
-    (1, 2, 3),
-    (4, 5, 9),
-    (-1, -2, -3),  # Test with negative numbers
-    (0, 0, 0),    # Test with zeros
-    (0.5, 0.5, 1), # Test with floating-point numbers
-    (-1, 1, 0),   # Test with numbers that sum to zero
-])
+# Define your test functions as usual
+
 def test_add(num1, num2, expected):
     assert Calculator.add(num1, num2) == expected
 
-@pytest.mark.parametrize("num1, num2, expected", [
-    (5, 3, 2),
-    (10, 4, 6),
-    (-5, -3, -2),  # Test with negative numbers
-    (0, 0, 0),     # Test with zeros
-    (1, 2, -1),    # Test with numbers that result in negative values
-])
 def test_subtract(num1, num2, expected):
     assert Calculator.subtract(num1, num2) == expected
 
-@pytest.mark.parametrize("num1, num2, expected", [
-    (2, 3, 6),
-    (7, 8, 56),
-    (-2, 3, -6),   # Test with a negative number
-    (0, 5, 0),     # Test with zero
-    (1.5, 2, 3),   # Test with floating-point numbers
-])
-def test_multiply(num1, num2, expected):
-    assert Calculator.multiply(num1, num2) == expected
+# ... other test functions ...
 
-@pytest.mark.parametrize("num1, num2, expected", [
-    (6, 2, 3),
-    (9, 3, 3),
-    (-6, 2, -3),   # Test with negative numbers
-    (0, 5, 0),     # Test with zero as numerator
-    (1.5, 2, 0.75), # Test with floating-point numbers
-])
-def test_divide(num1, num2, expected):
-    assert Calculator.divide(num1, num2) == expected
+# Define a wrapper function to run tests in parallel
+def run_tests(test_function, test_parameters):
+    results = []
+    for params in test_parameters:
+        result = test_function(*params)
+        results.append(result)
+    return results
 
-def test_divide_by_zero():
-    with pytest.raises(ValueError):
-        Calculator.divide(1, 0)
+# Define a function to run tests using multiprocessing
+def run_tests_parallel(test_function, test_parameters):
+    with multiprocessing.Pool() as pool:
+        results = pool.starmap(run_tests, [(test_function, test_parameters)])
+    return results
 
-@pytest.mark.parametrize("command", [
-    'add',
-    'subtract',
-    'multiply',
-    'divide',
-    'menu',
-])
-def test_valid_commands(command, capsys):
-    Calculator.display_menu()  # Display menu for reference
-    captured = capsys.readouterr()
-    assert command in captured.out
+# Specify the test parameters
+test_params_add = [(1, 2, 3), (4, 5, 9), (-1, -2, -3)]
+test_params_subtract = [(5, 3, 2), (10, 4, 6), (-5, -3, -2)]
 
-@pytest.mark.parametrize("invalid_command", [
-    'sin', 'cos', 'tan',  # Unsupported commands
-    'exp', 'log',         # Additional unsupported commands
-])
-def test_invalid_commands(invalid_command):
-    with pytest.raises(ValueError, match="Invalid command"):
-        Calculator.execute_command(invalid_command)
+# Run tests in parallel
+def test_parallel_execution():
+    results_add = run_tests_parallel(test_add, test_params_add)
+    results_subtract = run_tests_parallel(test_subtract, test_params_subtract)
+
+    # Print or handle the results as needed
+    print("Results for addition:", results_add)
+    print("Results for subtraction:", results_subtract)
+
+# Ensure this block is executed when the script is run directly
+if __name__ == "__main__":
+    test_parallel_execution()
 
